@@ -1,15 +1,12 @@
 import React  from 'react'
 import 'font-awesome/css/font-awesome.min.css';
 import firebase from '../../firebase'
+import TaskBoardItem from '../TaskBoardItem/taskBoardItem'
 
 import {
     MainContainer,
     ToDoContainer,
-    TaskInfoContainer,
     TodoTitle,
-    TaskName,
-    DeleteIcon,
-    TaskNumber,
     ImplementationContainer,
     ImplementTitle,
     BlockedContainer,
@@ -22,26 +19,13 @@ import {
 
 export default function TaskBoard(props){
 
-   const handleDelete = (id) => {
-      firebase 
-        .firestore()
-        .collection('createTask')
-        .doc(id)
-        .delete()
-   }
-
    const onDragOver = (e) => {
      e.preventDefault()
    }
 
-   const onDragStart = (e,id) => {
-     e.dataTransfer.setData('id', id)
-   }
-
    const onDrop= (e, status) =>{
      let id = e.dataTransfer.getData('id')
-     debugger
-     let tasks = props.taskInfo.filter((task) => {
+     props.taskInfo.filter((task) => {
        if(task.name === id){
            task.taskStatus = status
             firebase
@@ -52,7 +36,6 @@ export default function TaskBoard(props){
        }
        return task
       })
-      debugger
    }
 
     return(
@@ -67,15 +50,7 @@ export default function TaskBoard(props){
           {
             props.taskInfo.map((item, key)=>(
               ( item.taskStatus === 'todo' &&
-                <TaskInfoContainer 
-                  draggable 
-                  className='draggable' 
-                  onDragStart={ e => onDragStart(e, item.name)}
-                >
-                <TaskName>{item.name}</TaskName>
-                <DeleteIcon onClick={()=> handleDelete(item.id)}><i className="fa fa-trash-o"></i></DeleteIcon>
-                <TaskNumber> TASK {key+1}</TaskNumber>
-              </TaskInfoContainer>
+                 <TaskBoardItem item={item} key={key} />
             )
             ))
           }
@@ -86,27 +61,39 @@ export default function TaskBoard(props){
             onDrop={ e => onDrop(e, "implement")}
           >
             <ImplementTitle>IMPLEMENTATION</ImplementTitle>
-            { 
-             props.taskInfo.length > 0 && props.taskInfo.map((item, key)=>(
-               ( item.taskStatus === 'implement' && 
-              <TaskInfoContainer
-                draggable 
-                className='draggable' 
-                onDragStart={ e => onDragStart(e, item.name)}
-              >
-                <TaskName>{item.name}</TaskName>
-                <DeleteIcon onClick={()=> handleDelete(item.id)}><i className="fa fa-trash-o"></i></DeleteIcon>
-                <TaskNumber> TASK {key+1}</TaskNumber>
-              </TaskInfoContainer>
-               )
+          { 
+            props.taskInfo.length > 0 && props.taskInfo.map((item, key)=>(
+              ( item.taskStatus === 'implement' && 
+               <TaskBoardItem item={item} key={key} />
+              )
             ))
           }
           </ImplementationContainer>
-          <TestContainer>
+          <TestContainer
+            onDragOver={ e => onDragOver(e)}
+            onDrop={ e => onDrop(e, "test")}
+          >
             <TestTitle>TEST</TestTitle>
+            { 
+            props.taskInfo.length > 0 && props.taskInfo.map((item, key)=>(
+              ( item.taskStatus === 'test' && 
+               <TaskBoardItem item={item} key={key} />
+              )
+            ))
+          }
           </TestContainer>
-          <BlockedContainer>
+          <BlockedContainer
+            onDragOver={ e => onDragOver(e)}
+            onDrop={ e => onDrop(e, "blocked")}
+          >
             <BlockedTitle>BLOCKED</BlockedTitle>
+            { 
+            props.taskInfo.length > 0 && props.taskInfo.map((item, key)=>(
+              ( item.taskStatus === 'blocked' && 
+               <TaskBoardItem item={item} key={key} />
+              )
+            ))
+          }
           </BlockedContainer>
       </MainContainer>
     )
